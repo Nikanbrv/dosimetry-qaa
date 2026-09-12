@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>سامانه پیشرفته دوزیمتری پزشکی و تضمین کیفیت (نسخه اندروید)</title>
+  <meta name="description" content="ابزار آموزشی محاسبه ESD رادیوگرافی، SSDE/DLP سی‌تی‌اسکن و کنترل کیفی دوزیمتر بر اساس IAEA TRS-457 و AAPM 204/220 و IAEA TRS-398">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="دوزیمتری QA">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link href="https://cdn.jsdelivr.net/npm/vazirmatn@33.0.3/Vazirmatn-font-face.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-primary: #0f172a;
+      --bg-card: #1e293b;
+      --bg-input: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #0ea5e9;
+      --accent-hover: #0284c7;
+      --success: #22c55e;
+      --warning: #eab308;
+      --danger: #ef4444;
+      --border: #475569;
+    }
+
+    [data-theme="light"] {
+      --bg-primary: #f1f5f9;
+      --bg-card: #ffffff;
+      --bg-input: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #cbd5e1;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Vazirmatn', Tahoma, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      direction: rtl;
+      padding: 12px;
+      line-height: 1.5;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .warning-banner {
+      background: #451a03;
+      color: #fde047;
+      border: 1px solid #78350f;
+      padding: 10px 14px;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 0.82rem;
+      margin-bottom: 15px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 10px;
+    }
+
+    h1 { font-size: 1.1rem; color: var(--text-main); }
+
+    .nav-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 15px;
+      overflow-x: auto;
+      padding-bottom: 5px;
+    }
+
+    .tab-btn {
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      white-space: nowrap;
+      font-size: 0.85rem;
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 15px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 15px;
+    }
+
+    .card h3 {
+      color: var(--accent);
+      margin-bottom: 12px;
+      font-size: 1rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 6px;
+    }
+
+    .form-group { margin-bottom: 12px; }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-family: inherit;
+    }
+
+    .result-box {
+      background: rgba(14, 165, 233, 0.1);
+      border-right: 4px solid var(--accent);
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+    .badge-success { background: var(--success); color: #fff; }
+    .badge-warning { background: var(--warning); color: #000; }
+    .badge-danger { background: var(--danger); color: #fff; }
+
+    .actions-bar {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-secondary { background: var(--bg-input); color: var(--text-main); }
+  </style>
+</head>
+<body>
+
+  <div class="warning-banner">
+    ⚠️ نرم‌افزار آموزشی دوزیمتری پزشکی و کیفیت‌سنجی (IAEA TRS-457 / AAPM 204)
+  </div>
+
+  <header>
+    <div>
+      <h1>دوزیمتری و تضمین کیفیت پزشکی</h1>
+    </div>
+    <div style="display:flex; gap:6px;">
+      <button id="install-btn" class="btn btn-primary" style="flex:none; padding: 6px 12px; display:none;" onclick="installApp()">⬇️ نصب برنامه</button>
+      <button id="theme-toggle" class="btn btn-secondary" style="flex:none; padding: 6px 12px;" onclick="toggleTheme()">🌙/☀️</button>
+    </div>
+  </header>
+
+  <nav class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('rad-tab', event)">۱. رادیوگرافی (ESD)</button>
+    <button class="tab-btn" onclick="switchTab('ct-tab', event)">۲. سی‌تی اسکن (SSDE)</button>
+    <button class="tab-btn" onclick="switchTab('qa-tab', event)">۳. کیفیت دوزیمتر (QA)</button>
+    <button class="tab-btn" onclick="switchTab('db-tab', event)">۴. پایگاه داده JSON</button>
+  </nav>
+
+  <!-- MODULE 1: RADIOGRAPHY -->
+  <section id="rad-tab" class="tab-content active">
+    <div class="grid">
+      <div class="card">
+        <h3>پارامترهای پرتو x و پروتکل</h3>
+        <div class="form-group">
+          <label>پروتکل تصویربرداری:</label>
+          <select id="rad-protocol" onchange="loadRadProtocol()"></select>
+        </div>
+        <div class="form-group">
+          <label>ولتاژ تیوب (kVp):</label>
+          <input type="number" id="rad-kvp" value="80" oninput="calculateRad()">
+        </div>
+        <div class="form-group">
+          <label>جریان-زمان (mAs):</label>
+          <input type="number" id="rad-mas" value="20" oninput="calculateRad()">
+        </div>
+        <div class="form-group">
+          <label>فاصله چشمه تا پوست - SSD (cm):</label>
+          <input type="number" id="rad-ssd" value="100" oninput="calculateRad()">
+        </div>
+        <div class="form-group">
+          <label>توان بازدهی تیوب (n):</label>
+          <input type="number" id="rad-n" value="2.2" step="0.1" oninput="calculateRad()">
+        </div>
+        <div class="form-group">
+          <label>ضریب پراکندگی بازگشتی (BSF):</label>
+          <input type="number" id="rad-bsf" value="1.35" step="0.01" oninput="calculateRad()">
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>نتایج دوز سطحی ورودی (ESD)</h3>
+        <div class="result-box">
+          <p>بازدهی تیوب: <strong id="res-rad-output">0.00</strong> mGy/mAs</p>
+          <p>دوز سطحی ورودی (ESD): <strong id="res-rad-esd" style="font-size: 1.3rem; color: var(--accent);">0.00</strong> mGy</p>
+          <p>سطح مرجع DRL: <span id="res-rad-drl">0.00</span> mGy</p>
+          <p style="margin-top:5px;">ارزیابی DRL: <span id="res-rad-status" class="badge">نامشخص</span></p>
+        </div>
+        <div style="margin-top: 15px;">
+          <canvas id="radChart" height="180"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODULE 2: CT DOSIMETRY -->
+  <section id="ct-tab" class="tab-content">
+    <div class="grid">
+      <div class="card">
+        <h3>پارامترهای اسکن CT و ابعاد بیمار</h3>
+        <div class="form-group">
+          <label>ناحیه آناتومیک:</label>
+          <select id="ct-region" onchange="calculateCT()"></select>
+        </div>
+        <div class="form-group">
+          <label>شاخص دوز حجمی CTDIvol (mGy):</label>
+          <input type="number" id="ct-ctdivol" value="15" oninput="calculateCT()">
+        </div>
+        <div class="form-group">
+          <label>طول اسکن L (cm):</label>
+          <input type="number" id="ct-length" value="30" oninput="calculateCT()">
+        </div>
+        <div class="form-group">
+          <label>قطر AP بیمار (cm):</label>
+          <input type="number" id="ct-ap" value="20" oninput="calculateCT()">
+        </div>
+        <div class="form-group">
+          <label>قطر Lateral بیمار (cm):</label>
+          <input type="number" id="ct-lat" value="30" oninput="calculateCT()">
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>نتایج CTDIvol ،DLP و SSDE (AAPM 204/220)</h3>
+        <div class="result-box">
+          <p>حاصل‌ضرب دوز در طول (DLP): <strong id="res-ct-dlp">0.00</strong> mGy·cm</p>
+          <p>دوز موثر کل ($E$): <strong id="res-ct-eff">0.00</strong> mSv</p>
+          <p>قطر مؤثر بیمار ($D_{eff}=\sqrt{AP \times LAT}$): <span id="res-ct-dw">0.00</span> cm</p>
+          <p>ضریب تصحیح جثه TG204/220 ($f_{size}$): <span id="res-ct-fsize">0.00</span></p>
+          <p>دوز اختصاصی بیمار (SSDE): <strong id="res-ct-ssde" style="font-size: 1.3rem; color: var(--accent);">0.00</strong> mGy</p>
+          <p style="margin-top:5px;">ارزیابی ALARA: <span id="res-ct-status" class="badge">ایمن</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODULE 3: DOSIMETER QA -->
+  <section id="qa-tab" class="tab-content">
+    <div class="grid">
+      <div class="card">
+        <h3>تصحیح کالیبراسیون و محیطی (TRS-398)</h3>
+        <div class="form-group">
+          <label>نوع آشکارساز:</label>
+          <select id="qa-detector" onchange="loadQADetector()"></select>
+        </div>
+        <div class="form-group">
+          <label>قرائت خام آشکارساز ($D_{measured}$):</label>
+          <input type="number" id="qa-raw" value="10.2" step="0.1" oninput="calculateQA()">
+        </div>
+        <div class="form-group">
+          <label>ضریب کالیبراسیون مرجع ($N_k$):</label>
+          <input type="number" id="qa-nk" value="1.02" step="0.001" oninput="calculateQA()">
+        </div>
+        <div class="form-group">
+          <label>دما ($T^\circ C$):</label>
+          <input type="number" id="qa-temp" value="22" oninput="calculateQA()">
+        </div>
+        <div class="form-group">
+          <label>فشار هوا (kPa):</label>
+          <input type="number" id="qa-press" value="101.3" step="0.1" oninput="calculateQA()">
+        </div>
+        <div class="form-group">
+          <label>دوز مرجع استاندارد ($D_{ref}$):</label>
+          <input type="number" id="qa-ref" value="10.0" step="0.1" oninput="calculateQA()">
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>دوز تصحیح‌شده و نتیجه QA</h3>
+        <div class="result-box">
+          <p>ضریب تصحیح دما و فشار ($k_{TP}$): <span id="res-qa-ktp">1.000</span></p>
+          <p>دوز تصحیح‌شده نهایی: <strong id="res-qa-corr" style="font-size: 1.3rem; color: var(--accent);">0.00</strong> mGy</p>
+          <p>خطای نسبی: <strong id="res-qa-error">0.00%</strong></p>
+          <p style="margin-top:5px;">نتیجه تست QA: <span id="res-qa-status" class="badge">Pass</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODULE 4: JSON DATABASE -->
+  <section id="db-tab" class="tab-content">
+    <div class="card">
+      <h3>ویرایش پایگاه داده JSON</h3>
+      <textarea id="json-editor" rows="12" style="font-family: monospace; direction: ltr; font-size: 0.8rem;"></textarea>
+      <button class="btn btn-primary" style="margin-top: 10px; width: 100%;" onclick="saveJSONDB()">ذخیره تغییرات پایگاه داده</button>
+    </div>
+  </section>
+
+  <footer class="actions-bar">
+    <button class="btn btn-primary" onclick="exportReport()">📥 دانلود گزارش متنی</button>
+  </footer>
+
+  <p style="margin-top:14px; font-size:0.72rem; color: var(--text-muted); text-align:center; line-height:1.8;">
+    مراجع علمی: IAEA Technical Reports Series No. 457 (Dosimetry in Diagnostic Radiology) ·
+    AAPM Report No. 204 &amp; 220 (SSDE) · IAEA TRS-398 (Absorbed Dose Determination) ·
+    مقادیر DRL/ضرایب پیش‌فرض صرفاً نمونه آموزشی‌اند؛ برای کاربرد واقعی با مقادیر ملی/محلی و برگه کالیبراسیون آشکارساز جایگزین شوند.
+  </p>
+
+  <script>
+    // پایگاه داده ادغام شده درون کد
+    let appData = {
+      radiographyProtocols: [
+        { id: "chest_pa", name: "قفسه سینه (PA)", refKv: 115, refMas: 4, refOutput: 0.045, bsf: 1.35, drlEsd: 0.3 },
+        { id: "abdomen_ap", name: "شکم (AP)", refKv: 75, refMas: 25, refOutput: 0.085, bsf: 1.42, drlEsd: 3.0 },
+        { id: "lumbar_ap", name: "ستون فقرات کمری (AP)", refKv: 80, refMas: 35, refOutput: 0.088, bsf: 1.45, drlEsd: 4.5 },
+        { id: "skull_ap", name: "جمجمه (AP)", refKv: 75, refMas: 20, refOutput: 0.085, bsf: 1.38, drlEsd: 3.0 },
+        { id: "peds_chest", name: "قفسه سینه اطفال (5 ساله)", refKv: 65, refMas: 2, refOutput: 0.070, bsf: 1.20, drlEsd: 0.1 }
+      ],
+      ctRegions: [
+        { id: "head", name: "سر و مغز", kFactor: 0.0021, drlDlp: 1050, drlCtdi: 60 },
+        { id: "chest", name: "قفسه سینه", kFactor: 0.014, drlDlp: 400, drlCtdi: 15 },
+        { id: "abdomen", name: "شکم و لگن", kFactor: 0.015, drlDlp: 700, drlCtdi: 20 },
+        { id: "pelvis", name: "لگن اختصاصی", kFactor: 0.019, drlDlp: 550, drlCtdi: 18 },
+        { id: "peds_body", name: "تنور اطفال (10 ساله)", kFactor: 0.026, drlDlp: 250, drlCtdi: 10 }
+      ],
+      detectors: [
+        { type: "ion_chamber", name: "اتاقک یونیزاسیون (Farmer)", nk: 1.02, kq: 1.0, defaultKs: 1.005 },
+        { type: "solid_state", name: "آشکارساز حالت جامد", nk: 0.98, kq: 0.99, defaultKs: 1.0 },
+        { type: "tld", name: "دوزیمتر TLD-100", nk: 1.05, kq: 0.97, defaultKs: 1.0 }
+      ]
+    };
+
+    let radChartInstance = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("json-editor").value = JSON.stringify(appData, null, 2);
+      initDropdowns();
+      calculateRad();
+      calculateCT();
+      calculateQA();
+    });
+
+    function initDropdowns() {
+      const radSelect = document.getElementById("rad-protocol");
+      radSelect.innerHTML = appData.radiographyProtocols.map(p => `<option value="${p.id}">${p.name}</option>`).join("");
+      
+      const ctSelect = document.getElementById("ct-region");
+      ctSelect.innerHTML = appData.ctRegions.map(r => `<option value="${r.id}">${r.name}</option>`).join("");
+
+      const qaSelect = document.getElementById("qa-detector");
+      qaSelect.innerHTML = appData.detectors.map(d => `<option value="${d.type}">${d.name}</option>`).join("");
+
+      loadRadProtocol();
+      loadQADetector();
+    }
+
+    function switchTab(tabId, evt) {
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+      
+      evt.target.classList.add("active");
+      document.getElementById(tabId).classList.add("active");
+    }
+
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute("data-theme");
+      document.documentElement.setAttribute("data-theme", currentTheme === "dark" ? "light" : "dark");
+    }
+
+    // RADIOGRAPHY
+    function loadRadProtocol() {
+      const id = document.getElementById("rad-protocol").value;
+      const p = appData.radiographyProtocols.find(x => x.id === id);
+      if (p) {
+        document.getElementById("rad-kvp").value = p.refKv;
+        document.getElementById("rad-mas").value = p.refMas;
+        document.getElementById("rad-bsf").value = p.bsf;
+        calculateRad();
+      }
+    }
+
+    function calculateRad() {
+      const id = document.getElementById("rad-protocol").value;
+      const p = appData.radiographyProtocols.find(x => x.id === id) || appData.radiographyProtocols[0];
+      
+      const kvp = parseFloat(document.getElementById("rad-kvp").value) || 80;
+      const mas = parseFloat(document.getElementById("rad-mas").value) || 1;
+      const ssd = parseFloat(document.getElementById("rad-ssd").value) || 100;
+      const n = parseFloat(document.getElementById("rad-n").value) || 2.2;
+      const bsf = parseFloat(document.getElementById("rad-bsf").value) || 1.35;
+
+      const output = p.refOutput * Math.pow(kvp / p.refKv, n);
+      const esd = output * mas * bsf * Math.pow(100 / ssd, 2);
+
+      document.getElementById("res-rad-output").innerText = output.toFixed(4);
+      document.getElementById("res-rad-esd").innerText = esd.toFixed(3);
+      document.getElementById("res-rad-drl").innerText = p.drlEsd;
+
+      const statusBadge = document.getElementById("res-rad-status");
+      if (esd <= p.drlEsd) {
+        statusBadge.innerText = "مجاز (زیر DRL)";
+        statusBadge.className = "badge badge-success";
+      } else if (esd <= p.drlEsd * 1.2) {
+        statusBadge.innerText = "هشدار ALARA";
+        statusBadge.className = "badge badge-warning";
+      } else {
+        statusBadge.innerText = "فراتر از DRL";
+        statusBadge.className = "badge badge-danger";
+      }
+
+      updateRadChart(esd, p.drlEsd);
+    }
+
+    function updateRadChart(esd, drl) {
+      if (typeof Chart === 'undefined') return;
+      const ctx = document.getElementById("radChart").getContext("2d");
+      if (radChartInstance) radChartInstance.destroy();
+
+      radChartInstance = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: ["ESD بیمار", "DRL مرجع"],
+          datasets: [{
+            data: [esd, drl],
+            backgroundColor: [esd > drl ? "#ef4444" : "#0ea5e9", "#64748b"]
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+
+    // CT (AAPM 204/220)
+    function calculateCT() {
+      const regId = document.getElementById("ct-region").value;
+      const reg = appData.ctRegions.find(r => r.id === regId) || appData.ctRegions[0];
+
+      const ctdivol = parseFloat(document.getElementById("ct-ctdivol").value) || 0;
+      const length = parseFloat(document.getElementById("ct-length").value) || 0;
+      const ap = parseFloat(document.getElementById("ct-ap").value) || 0;
+      const lat = parseFloat(document.getElementById("ct-lat").value) || 0;
+
+      const dlp = ctdivol * length;
+      const effDose = dlp * reg.kFactor;
+
+      // Effective diameter per AAPM TG204 (geometric mean of AP and lateral dimensions)
+      const deff = Math.sqrt(ap * lat);
+      // Size correction factor per AAPM TG220, 120 kV coefficients (Deff-based): f(D) = A * exp(-B * D)
+      const fSize = 3.704 * Math.exp(-0.0367 * deff);
+      const ssde = ctdivol * fSize;
+
+      document.getElementById("res-ct-dlp").innerText = dlp.toFixed(1);
+      document.getElementById("res-ct-eff").innerText = effDose.toFixed(2);
+      document.getElementById("res-ct-dw").innerText = deff.toFixed(2);
+      document.getElementById("res-ct-fsize").innerText = fSize.toFixed(3);
+      document.getElementById("res-ct-ssde").innerText = ssde.toFixed(2);
+
+      const status = document.getElementById("res-ct-status");
+      if (dlp <= reg.drlDlp) {
+        status.innerText = "ایمن (زیر DRL)";
+        status.className = "badge badge-success";
+      } else {
+        status.innerText = "هشدار دوز بالا";
+        status.className = "badge badge-danger";
+      }
+    }
+
+    // QA (TRS-398)
+    function loadQADetector() {
+      const type = document.getElementById("qa-detector").value;
+      const det = appData.detectors.find(d => d.type === type);
+      if (det) {
+        document.getElementById("qa-nk").value = det.nk;
+        calculateQA();
+      }
+    }
+
+    function calculateQA() {
+      const raw = parseFloat(document.getElementById("qa-raw").value) || 0;
+      const nk = parseFloat(document.getElementById("qa-nk").value) || 1.0;
+      const temp = parseFloat(document.getElementById("qa-temp").value) || 20;
+      const press = parseFloat(document.getElementById("qa-press").value) || 101.325;
+      const refDose = parseFloat(document.getElementById("qa-ref").value) || 1.0;
+
+      const ktp = ((273.15 + temp) / 293.15) * (101.325 / press);
+      const correctedDose = raw * nk * ktp;
+      const relError = ((correctedDose - refDose) / refDose) * 100;
+
+      document.getElementById("res-qa-ktp").innerText = ktp.toFixed(4);
+      document.getElementById("res-qa-corr").innerText = correctedDose.toFixed(3);
+      document.getElementById("res-qa-error").innerText = relError.toFixed(2) + "%";
+
+      const status = document.getElementById("res-qa-status");
+      if (Math.abs(relError) <= 5.0) {
+        status.innerText = "Pass (خطا ≤ 5%)";
+        status.className = "badge badge-success";
+      } else if (Math.abs(relError) <= 10.0) {
+        status.innerText = "نیازمند تنظیم (5-10%)";
+        status.className = "badge badge-warning";
+      } else {
+        status.innerText = "Fail (خطا > 10%)";
+        status.className = "badge badge-danger";
+      }
+    }
+
+    function saveJSONDB() {
+      try {
+        appData = JSON.parse(document.getElementById("json-editor").value);
+        initDropdowns();
+        alert("پایگاه داده با موفقیت به‌روزرسانی شد!");
+      } catch (e) {
+        alert("خطا در فرمت JSON: " + e.message);
+      }
+    }
+
+    function exportReport() {
+      const now = new Date();
+      const dateStr = now.toLocaleDateString("fa-IR");
+      const timeStr = now.toLocaleTimeString("fa-IR");
+
+      const radId = document.getElementById("rad-protocol").value;
+      const radProto = appData.radiographyProtocols.find(x => x.id === radId) || {};
+      const ctId = document.getElementById("ct-region").value;
+      const ctReg = appData.ctRegions.find(x => x.id === ctId) || {};
+      const qaId = document.getElementById("qa-detector").value;
+      const qaDet = appData.detectors.find(x => x.type === qaId) || {};
+
+      const lines = [];
+      lines.push("======================================================");
+      lines.push("      گزارش دوزیمتری پزشکی و تضمین کیفیت (QA)");
+      lines.push("======================================================");
+      lines.push(`تاریخ: ${dateStr}   ساعت: ${timeStr}`);
+      lines.push("مرجع علمی: IAEA TRS-457 | AAPM Report 204/220 | IAEA TRS-398");
+      lines.push("این گزارش صرفاً جهت آموزش کنترل کیفی رادیولوژی است.");
+      lines.push("");
+
+      lines.push("------------------------------------------------------");
+      lines.push("۱) رادیوگرافی - دوز سطحی ورودی (ESD)");
+      lines.push("------------------------------------------------------");
+      lines.push(`پروتکل: ${radProto.name || "-"}`);
+      lines.push(`kVp: ${document.getElementById("rad-kvp").value}    mAs: ${document.getElementById("rad-mas").value}    SSD: ${document.getElementById("rad-ssd").value} cm`);
+      lines.push(`ضریب توان تیوب (n): ${document.getElementById("rad-n").value}    ضریب پراکندگی بازگشتی (BSF): ${document.getElementById("rad-bsf").value}`);
+      lines.push(`بازدهی تیوب محاسبه‌شده: ${document.getElementById("res-rad-output").innerText} mGy/mAs`);
+      lines.push(`ESD: ${document.getElementById("res-rad-esd").innerText} mGy   |   DRL مرجع: ${document.getElementById("res-rad-drl").innerText} mGy`);
+      lines.push(`ارزیابی: ${document.getElementById("res-rad-status").innerText}`);
+      lines.push("");
+
+      lines.push("------------------------------------------------------");
+      lines.push("۲) سی‌تی اسکن - CTDIvol / DLP / SSDE");
+      lines.push("------------------------------------------------------");
+      lines.push(`ناحیه: ${ctReg.name || "-"}`);
+      lines.push(`CTDIvol: ${document.getElementById("ct-ctdivol").value} mGy    طول اسکن: ${document.getElementById("ct-length").value} cm`);
+      lines.push(`AP: ${document.getElementById("ct-ap").value} cm    Lateral: ${document.getElementById("ct-lat").value} cm`);
+      lines.push(`DLP: ${document.getElementById("res-ct-dlp").innerText} mGy.cm    دوز موثر: ${document.getElementById("res-ct-eff").innerText} mSv`);
+      lines.push(`قطر مؤثر (Deff): ${document.getElementById("res-ct-dw").innerText} cm    ضریب اندازه (f_size): ${document.getElementById("res-ct-fsize").innerText}`);
+      lines.push(`SSDE: ${document.getElementById("res-ct-ssde").innerText} mGy`);
+      lines.push(`ارزیابی: ${document.getElementById("res-ct-status").innerText}`);
+      lines.push("");
+
+      lines.push("------------------------------------------------------");
+      lines.push("۳) کنترل کیفی دوزیمتر (TRS-398)");
+      lines.push("------------------------------------------------------");
+      lines.push(`آشکارساز: ${qaDet.name || "-"}`);
+      lines.push(`قرائت خام: ${document.getElementById("qa-raw").value}    Nk: ${document.getElementById("qa-nk").value}`);
+      lines.push(`دما: ${document.getElementById("qa-temp").value} °C    فشار: ${document.getElementById("qa-press").value} kPa    دوز مرجع: ${document.getElementById("qa-ref").value}`);
+      lines.push(`kTP: ${document.getElementById("res-qa-ktp").innerText}    دوز تصحیح‌شده: ${document.getElementById("res-qa-corr").innerText} mGy`);
+      lines.push(`خطای نسبی: ${document.getElementById("res-qa-error").innerText}`);
+      lines.push(`نتیجه: ${document.getElementById("res-qa-status").innerText}`);
+      lines.push("");
+      lines.push("======================================================");
+      lines.push("توجه: مقادیر DRL و ضرایب موجود در پایگاه داده صرفاً جهت");
+      lines.push("تمرین آموزشی هستند و باید پیش از استفاده بالینی با DRLهای");
+      lines.push("ملی/محلی و مستندات کالیبراسیون دستگاه واقعی جایگزین شوند.");
+      lines.push("======================================================");
+
+      const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `گزارش_دوزیمتری_${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,"0")}-${now.getDate().toString().padStart(2,"0")}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Register service worker for offline / installable behavior on Android
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("service-worker.js").catch(() => {});
+      });
+    }
+
+    // Android/Chrome "Add to Home screen" install prompt
+    let deferredInstallPrompt = null;
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      document.getElementById("install-btn").style.display = "inline-block";
+    });
+    function installApp() {
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      deferredInstallPrompt.userChoice.finally(() => {
+        deferredInstallPrompt = null;
+        document.getElementById("install-btn").style.display = "none";
+      });
+    }
+    window.addEventListener("appinstalled", () => {
+      document.getElementById("install-btn").style.display = "none";
+    });
+  </script>
+</body>
+</html>
