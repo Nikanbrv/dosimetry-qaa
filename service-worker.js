@@ -1,4 +1,4 @@
-const CACHE_NAME = "dosimetry-qa-v1";
+const CACHE_NAME = "dosimetry-qa-v3";
 const APP_SHELL = [
   "./index.html",
   "./manifest.json",
@@ -35,7 +35,3 @@ self.addEventListener("fetch", (event) => {
           return response;
         })
         .catch(() => cached);
-      return cached || network;
-    })
-  );
-});
